@@ -12,7 +12,7 @@ use tezos_messages::p2p::encoding::fitness::Fitness;
 use tezos_messages::Timestamp;
 use thiserror::Error;
 
-use crypto::hash::{
+use tezos_crypto_rs::hash::{
     BlockHash, BlockMetadataHash, ChainId, ContextHash, FromBytesError, OperationHash,
     OperationListListHash, OperationMetadataHash, OperationMetadataListListHash, ProtocolHash,
 };

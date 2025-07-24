@@ -19,14 +19,14 @@ use tezos_context_api::{PatchContext, TezosContextStorageConfiguration};
 use tezos_messages::p2p::encoding::fitness::Fitness;
 use thiserror::Error;
 
-use crypto::{
-    base58::FromBase58CheckError,
-    hash::{BlockHash, ChainId, ContextHash, FromBytesError, HashType},
-};
 use tezos_api::environment::{
     get_empty_operation_list_list_hash, TezosEnvironmentConfiguration, TezosEnvironmentError,
 };
 use tezos_api::ffi::{ApplyBlockRequest, ApplyBlockResponse, CommitGenesisResult};
+use tezos_crypto_rs::{
+    base58::FromBase58CheckError,
+    hash::{BlockHash, ChainId, ContextHash, FromBytesError, HashType},
+};
 use tezos_messages::p2p::binary_message::{BinaryRead, BinaryWrite, MessageHash, MessageHashError};
 use tezos_messages::p2p::encoding::prelude::BlockHeader;
 use tezos_messages::Head;
@@ -645,7 +645,7 @@ pub mod initializer {
     use crate::persistent::database::{open_kv, RocksDbKeyValueSchema};
     use crate::persistent::{open_main_db, DBError, DbConfiguration};
     use crate::{StorageError, SystemStorage};
-    use crypto::hash::ChainId;
+    use tezos_crypto_rs::hash::ChainId;
 
     // IMPORTANT: Cache object must live at least as long as DB (returned by open_kv)
     pub type GlobalRocksDbCacheHolder = Vec<RocksDbCache>;

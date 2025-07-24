@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use rocksdb::{Cache, ColumnFamilyDescriptor, MergeOperands};
 
-use crypto::hash::BlockHash;
+use tezos_crypto_rs::hash::BlockHash;
 use tezos_messages::p2p::encoding::prelude::*;
 
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};
@@ -368,7 +368,7 @@ mod tests {
     use crate::tests_common::TmpStorage;
 
     use super::*;
-    use crypto::hash::HashType;
+    use tezos_crypto_rs::hash::HashType;
 
     fn block_hash(bytes: &[u8]) -> BlockHash {
         let mut vec = bytes.to_vec();

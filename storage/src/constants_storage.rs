@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use rocksdb::{Cache, ColumnFamilyDescriptor};
 
-use crypto::hash::ProtocolHash;
+use tezos_crypto_rs::hash::ProtocolHash;
 
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};
 use crate::persistent::database::{default_table_options, RocksDbKeyValueSchema};

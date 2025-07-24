@@ -7,7 +7,7 @@ use std::sync::Arc;
 use getset::Getters;
 use serde::{Deserialize, Serialize};
 
-use crypto::hash::{BlockHash, ContextHash};
+use tezos_crypto_rs::hash::{BlockHash, ContextHash};
 use tezos_messages::p2p::encoding::block_header::Level;
 
 use crate::commit_log::{CommitLogWithSchema, Location};

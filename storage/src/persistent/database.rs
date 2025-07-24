@@ -17,7 +17,7 @@ use rocksdb::{
 use serde::Serialize;
 use thiserror::Error;
 
-use crypto::hash::FromBytesError;
+use tezos_crypto_rs::hash::FromBytesError;
 
 use crate::persistent::codec::{Decoder, Encoder, SchemaError};
 use crate::persistent::{DbConfiguration, KeyValueSchema, KeyValueStoreBackend};

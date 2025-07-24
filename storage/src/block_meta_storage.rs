@@ -10,7 +10,7 @@ use rocksdb::{Cache, ColumnFamilyDescriptor, MergeOperands};
 use serde::{Deserialize, Serialize};
 use slog::{debug, warn, Logger};
 
-use crypto::hash::{
+use tezos_crypto_rs::hash::{
     BlockHash, BlockMetadataHash, ChainId, HashType, OperationMetadataHash,
     OperationMetadataListListHash, ProtocolHash,
 };

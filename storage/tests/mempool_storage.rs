@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 use anyhow::Error;
-use crypto::hash::OperationHash;
+use tezos_crypto_rs::hash::OperationHash;
 
 use storage::mempool_storage::MempoolOperationType;
 use storage::tests_common::TmpStorage;

@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use crypto::hash::{HashType, OperationHash};
+use tezos_crypto_rs::hash::{HashType, OperationHash};
 use tezos_messages::p2p::binary_message::MessageHash;
 use tezos_messages::p2p::encoding::operation::OperationMessage;
 

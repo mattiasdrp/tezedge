@@ -7,7 +7,7 @@ use std::ops::Range;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crypto::hash::*;
+use tezos_crypto_rs::hash::*;
 
 /// Possible errors for schema
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
@@ -20,8 +20,8 @@ pub enum SchemaError {
     DecodeValidationError(String),
 }
 
-impl From<crypto::hash::FromBytesError> for SchemaError {
-    fn from(_: crypto::hash::FromBytesError) -> Self {
+impl From<tezos_crypto_rs::hash::FromBytesError> for SchemaError {
+    fn from(_: tezos_crypto_rs::hash::FromBytesError) -> Self {
         SchemaError::DecodeError
     }
 }

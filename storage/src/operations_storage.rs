@@ -7,7 +7,7 @@ use std::sync::Arc;
 use rocksdb::{Cache, ColumnFamilyDescriptor, SliceTransform};
 use serde::{Deserialize, Serialize};
 
-use crypto::hash::{BlockHash, HashType};
+use tezos_crypto_rs::hash::{BlockHash, HashType};
 use tezos_messages::p2p::encoding::prelude::*;
 
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};

@@ -7,7 +7,7 @@ use std::convert::TryInto;
 use anyhow::Error;
 use rand::Rng;
 
-use crypto::hash::BlockHash;
+use tezos_crypto_rs::hash::BlockHash;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 

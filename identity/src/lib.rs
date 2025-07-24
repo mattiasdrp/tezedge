@@ -11,8 +11,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use thiserror::Error;
 
-use crypto::{crypto_box::PublicKeyError, hash::CryptoboxPublicKeyHash};
-use crypto::{
+use tezos_crypto_rs::{crypto_box::PublicKeyError, hash::CryptoboxPublicKeyHash};
+use tezos_crypto_rs::{
     crypto_box::{random_keypair, PublicKey, SecretKey},
     proof_of_work::ProofOfWork,
 };
@@ -54,7 +54,7 @@ pub struct Identity {
     pub public_key: PublicKey,
     /// Hex encoded secret key: [`crypto_box::SecretKey`]
     pub secret_key: SecretKey,
-    /// Hex encoded pow: [`crypto::ProofOfWork`]
+    /// Hex encoded pow: [`tezos_crypto_rs::ProofOfWork`]
     pub proof_of_work_stamp: ProofOfWork,
 }
 

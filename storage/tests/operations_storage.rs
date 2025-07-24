@@ -4,7 +4,7 @@
 use std::convert::TryFrom;
 
 use anyhow::Error;
-use crypto::hash::BlockHash;
+use tezos_crypto_rs::hash::BlockHash;
 
 use storage::tests_common::TmpStorage;
 use storage::*;

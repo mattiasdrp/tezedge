@@ -4,7 +4,7 @@
 use std::convert::TryInto;
 
 use anyhow::Error;
-use crypto::hash::{BlockHash, HashType};
+use tezos_crypto_rs::hash::{BlockHash, HashType};
 
 use storage::persistent::{Decoder, Encoder};
 use storage::BlockHeaderWithHash;

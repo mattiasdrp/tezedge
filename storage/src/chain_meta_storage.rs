@@ -8,7 +8,7 @@ use std::convert::TryFrom;
 use rocksdb::{Cache, ColumnFamilyDescriptor};
 use serde::{Deserialize, Serialize};
 
-use crypto::hash::{ChainId, HashType};
+use tezos_crypto_rs::hash::{ChainId, HashType};
 use tezos_messages::Head;
 
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};

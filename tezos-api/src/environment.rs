@@ -18,10 +18,10 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use thiserror::Error;
 
-use crypto::hash::{
+use tezos_crypto_rs::hash::{
     chain_id_from_block_hash, BlockHash, ChainId, ContextHash, OperationListListHash, ProtocolHash,
 };
-use crypto::{base58::FromBase58CheckError, blake2b::Blake2bError};
+use tezos_crypto_rs::{base58::FromBase58CheckError, blake2b::Blake2bError};
 use tezos_messages::p2p::encoding::prelude::{BlockHeader, BlockHeaderBuilder};
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;

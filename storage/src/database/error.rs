@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 use crate::persistent::SchemaError;
-use crypto::hash::FromBytesError;
 use std::io;
+use tezos_crypto_rs::hash::FromBytesError;
 use thiserror::Error;
 
 /// Possible errors for schema

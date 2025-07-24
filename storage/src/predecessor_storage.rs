@@ -6,7 +6,7 @@ use std::sync::Arc;
 use rocksdb::{Cache, ColumnFamilyDescriptor};
 use serde::{Deserialize, Serialize};
 
-use crypto::hash::BlockHash;
+use tezos_crypto_rs::hash::BlockHash;
 
 use crate::block_meta_storage::Meta;
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};
