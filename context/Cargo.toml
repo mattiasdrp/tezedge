@@ -28,7 +28,7 @@ strum = "0.20"
 strum_macros = "0.20"
 thiserror = "1.0"
 # Internal dependencies
-tezos_api = { path = "../api" }
+tezos_api = { path = "../tezos-api" }
 tezos_context_api = { path = "../context-api" }
 tezos_spsc = { path = "../spsc" }
 tezos_crypto_rs = { path = "../crypto" }
