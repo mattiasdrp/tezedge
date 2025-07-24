@@ -8,6 +8,7 @@ members = [
   "crypto",
   "identity",
   "spsc",
+  "storage",
   "tezos-api",
   "tezos-encoding",
   "tezos-encoding-derive",
