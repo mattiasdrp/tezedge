@@ -4,6 +4,7 @@ cargo-features = ["named-profiles"]
 resolver = "2"
 members = [
   "context",
+  "context-api",
   "crypto",
   "tezos-api",
   "tezos-encoding",
