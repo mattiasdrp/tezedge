@@ -6,6 +6,7 @@ members = [
   "context",
   "context-api",
   "crypto",
+  "identity",
   "tezos-api",
   "tezos-encoding",
   "tezos-encoding-derive",
