@@ -12,11 +12,7 @@ use crate::has_encoding;
 use crate::nom::NomReader;
 
 use hex::FromHexError;
-use num_bigint::Sign;
 use serde::{Deserialize, Serialize};
-
-#[cfg(feature = "fuzzing")]
-use crate::fuzzing::bigint::BigIntMutator;
 
 /// This is a wrapper for [num_bigint::BigInt] type.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -89,33 +85,30 @@ impl From<&Zarith> for BigInt {
 has_encoding!(Zarith, ZARITH_ENCODING, { Encoding::Z });
 
 /// Mutez number
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
-#[derive(Clone, Debug)]
-pub struct Mutez(
-    #[cfg_attr(feature = "fuzzing", field_mutator(BigIntMutator))] pub num_bigint::BigInt,
-);
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Narith(pub num_bigint::BigUint);
 
-impl<'de> Deserialize<'de> for Mutez {
+#[deprecated = "Mutez has been replaced by Narith, which has identical semantics for encoding & decoding"]
+pub type Mutez = Narith;
+
+impl<'de> Deserialize<'de> for Narith {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         if deserializer.is_human_readable() {
             let string: String = serde::Deserialize::deserialize(deserializer)?;
-            let big_int: num_bigint::BigInt = string
+            let big_uint: num_bigint::BigUint = string
                 .parse()
                 .map_err(|err| serde::de::Error::custom(format!("cannot parse big int: {err}")))?;
-            if big_int.sign() == Sign::Minus {
-                return Err(serde::de::Error::custom("negative number for natural"));
-            }
-            Ok(Self(big_int))
+            Ok(Self(big_uint))
         } else {
             Ok(Self(serde::Deserialize::deserialize(deserializer)?))
         }
     }
 }
 
-impl Serialize for Mutez {
+impl Serialize for Narith {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -129,46 +122,39 @@ impl Serialize for Mutez {
     }
 }
 
-impl From<num_bigint::BigInt> for Mutez {
-    fn from(from: num_bigint::BigInt) -> Self {
-        Mutez(from)
+impl From<num_bigint::BigUint> for Narith {
+    fn from(from: num_bigint::BigUint) -> Self {
+        Narith(from)
     }
 }
 
-impl From<Mutez> for num_bigint::BigInt {
-    fn from(from: Mutez) -> Self {
+impl From<Narith> for num_bigint::BigUint {
+    fn from(from: Narith) -> Self {
         from.0
     }
 }
 
-impl From<&num_bigint::BigInt> for Mutez {
-    fn from(from: &num_bigint::BigInt) -> Self {
-        Mutez(from.clone())
+impl From<&num_bigint::BigUint> for Narith {
+    fn from(from: &num_bigint::BigUint) -> Self {
+        Narith(from.clone())
     }
 }
 
-impl From<&Mutez> for num_bigint::BigInt {
-    fn from(from: &Mutez) -> Self {
+impl From<&Narith> for num_bigint::BigUint {
+    fn from(from: &Narith) -> Self {
         from.0.clone()
     }
 }
 
-impl From<Mutez> for BigInt {
-    fn from(source: Mutez) -> Self {
-        Self(source.0)
+impl From<u64> for Narith {
+    fn from(value: u64) -> Self {
+        Narith(value.into())
     }
 }
 
-impl From<&Mutez> for BigInt {
-    fn from(source: &Mutez) -> Self {
-        Self(source.0.clone())
-    }
-}
-
-has_encoding!(Mutez, MUTEZ_ENCODING, { Encoding::Mutez });
+has_encoding!(Narith, NARITH_ENCODING, { Encoding::N });
 
 #[derive(Clone, PartialEq, Eq)]
-//#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 pub struct SizedBytes<const SIZE: usize>(pub [u8; SIZE]);
 
 impl<const SIZE: usize> std::fmt::Display for SizedBytes<SIZE> {
@@ -292,7 +278,7 @@ impl<'de, const SIZE: usize> Deserialize<'de> for SizedBytes<SIZE> {
     }
 }
 
-impl<'a, const SIZE: usize> NomReader<'a> for SizedBytes<SIZE> {
+impl<const SIZE: usize> NomReader<'_> for SizedBytes<SIZE> {
     fn nom_read(input: &[u8]) -> crate::nom::NomResult<Self> {
         use crate::nom;
         let (input, slice) = nom::sized(SIZE, nom::bytes)(input)?;
@@ -318,7 +304,6 @@ impl<const SIZE: usize> HasEncoding for SizedBytes<SIZE> {
 
 /// Sequence of bytes bounded by maximum size
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 pub struct Bytes(Vec<u8>);
 
 #[derive(Debug, thiserror::Error)]
@@ -387,7 +372,7 @@ impl HasEncoding for Bytes {
     }
 }
 
-impl<'a> NomReader<'a> for Bytes {
+impl NomReader<'_> for Bytes {
     fn nom_read(input: &[u8]) -> crate::nom::NomResult<Self> {
         use crate::nom::bytes;
         let (input, b) = bytes(input)?;
@@ -423,7 +408,7 @@ impl<'de> serde::Deserialize<'de> for Bytes {
     {
         if deserializer.is_human_readable() {
             let hex_bytes: String = serde::Deserialize::deserialize(deserializer)?;
-            let bytes = hex::decode(&hex_bytes).map_err(|err| {
+            let bytes = hex::decode(hex_bytes).map_err(|err| {
                 serde::de::Error::custom(format!("error decoding from hex string: {err}"))
             })?;
             Ok(Self(bytes))
@@ -501,8 +486,7 @@ pub enum Value {
     /// Encoding of a boolean (data is encoded as a byte in binary and a boolean in JSON).
     Bool(bool),
     /// Encoding of a string
-    /// - encoded as a byte sequence in binary prefixed by the length
-    /// of the string
+    /// - encoded as a byte sequence in binary prefixed by the length of the string
     /// - encoded as a string in JSON.
     String(String),
     /// Encoding of arbitrary bytes (encoded via hex in JSON and directly as a sequence byte in binary).
@@ -513,8 +497,7 @@ pub enum Value {
     Option(Option<Box<Value>>),
     /// List combinator.
     /// - encoded as an array in JSON
-    /// - encoded as the concatenation of all the element in binary
-    /// in binary prefixed by its length in bytes
+    /// - encoded as the concatenation of all the element in binary in binary prefixed by its length in bytes
     List(Vec<Value>),
     /// Enum value with name and/or ordinal number
     Enum(Option<String>, Option<u32>),

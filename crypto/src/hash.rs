@@ -1,5 +1,6 @@
 // Copyright (c) SimpleStaking, Viable Systems and Tezedge Contributors
 // SPDX-CopyrightText: 2022-2024 Trilitech <contact@trili.tech>
+// SPDX-CopyrightText: 2025 Functori <contact@functori.com>
 // SPDX-License-Identifier: MIT
 
 use std::convert::{TryFrom, TryInto};
@@ -42,7 +43,13 @@ mod prefix_bytes {
     // SecretKeyEd25519 uses identical b58 encoding as SeedEd25519 in
     // non-legacy format.
     pub const SECRET_KEY_ED25519: [u8; 4] = SEED_ED25519;
+    pub const SECRET_KEY_SECP256K1: [u8; 4] = [17, 162, 224, 201];
+    pub const SECRET_KEY_P256: [u8; 4] = [16, 81, 238, 189];
     pub const SECRET_KEY_BLS: [u8; 4] = [3, 150, 192, 40];
+    pub const ENCRYPTED_SECRET_KEY_ED25519: [u8; 5] = [7, 90, 60, 179, 41];
+    pub const ENCRYPTED_SECRET_KEY_SECP256K1: [u8; 5] = [9, 237, 241, 174, 150];
+    pub const ENCRYPTED_SECRET_KEY_P256: [u8; 5] = [9, 48, 57, 115, 171];
+    pub const ENCRYPTED_SECRET_KEY_BLS: [u8; 5] = [2, 5, 30, 53, 25];
     pub const GENERIC_SIGNATURE_HASH: [u8; 3] = [4, 130, 43];
     pub const ED22519_SIGNATURE_HASH: [u8; 5] = [9, 245, 205, 134, 18];
     pub const SECP256K1_SIGNATURE_HASH: [u8; 5] = [13, 115, 101, 19, 63];
@@ -51,6 +58,7 @@ mod prefix_bytes {
     pub const NONCE_HASH: [u8; 3] = [69, 220, 169];
     pub const OPERATION_LIST_HASH: [u8; 2] = [133, 233];
     pub const SMART_ROLLUP_HASH: [u8; 3] = [6, 124, 117];
+    pub const SCRIPT_EXPR_HASH: [u8; 4] = [13, 44, 64, 27];
 }
 
 pub type Hash = Vec<u8>;
@@ -73,7 +81,6 @@ pub trait HashTrait: Into<Hash> + AsRef<[u8]> {
 }
 
 /// Error creating hash from bytes
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Debug, Error)]
 pub enum FromBytesError {
     /// Invalid data size
@@ -120,17 +127,6 @@ macro_rules! define_hash {
                 // TODO - TE-373: with b58 this could be done without the need
                 // to perform a heap allocation.
                 write!(f, "{}", self.to_base58_check())
-            }
-        }
-
-        #[cfg(feature = "fuzzing")]
-        impl fuzzcheck::DefaultMutator for $name {
-            type Mutator = fuzzcheck::mutators::unit::UnitMutator<$name>;
-            #[no_coverage]
-            fn default_mutator() -> Self::Mutator {
-                fuzzcheck::mutators::unit::UnitMutator::new($name(
-                    [0u8; HashType::$name.size()].into(),
-                ))
             }
         }
 
@@ -311,7 +307,13 @@ define_hash!(PublicKeyP256);
 define_hash!(PublicKeyBls);
 define_hash!(SeedEd25519);
 define_hash!(SecretKeyEd25519);
+define_hash!(SecretKeySecp256k1);
+define_hash!(SecretKeyP256);
 define_hash!(SecretKeyBls);
+define_hash!(EncryptedSecretKeyEd25519);
+define_hash!(EncryptedSecretKeySecp256k1);
+define_hash!(EncryptedSecretKeyP256);
+define_hash!(EncryptedSecretKeyBls);
 define_hash!(UnknownSignature);
 define_hash!(Ed25519Signature);
 define_hash!(Secp256k1Signature);
@@ -320,6 +322,7 @@ define_hash!(BlsSignature);
 define_hash!(NonceHash);
 define_hash!(OperationListHash);
 define_hash!(SmartRollupHash);
+define_hash!(ScriptExprHash);
 
 macro_rules! unknown_sig {
     ($sig:ident) => {
@@ -389,8 +392,20 @@ pub enum HashType {
     SeedEd25519,
     // "\013\015\058\007" (* edsk(54) *)
     SecretKeyEd25519,
+    // "\017\162\224\201" (* spsk(54) *)
+    SecretKeySecp256k1,
+    // "\016\081\238\189" (* p2sk(54) *)
+    SecretKeyP256,
     // "\003\150\192\040" (* BLsk(54) *)
     SecretKeyBls,
+    // "\007\090\060\179\041" (* edesk(88) *)
+    EncryptedSecretKeyEd25519,
+    // "\009\237\241\174\150" (* spesk(88) *)
+    EncryptedSecretKeySecp256k1,
+    // "\009\048\057\115\171" (* p2esk(88) *)
+    EncryptedSecretKeyP256,
+    // "\002\005\030\053\025" (* BLesk(88) *)
+    EncryptedSecretKeyBls,
     // "\004\130\043" (* sig(96) *)
     UnknownSignature,
     // "\009\245\205\134\018" (* edsig(99) *)
@@ -407,6 +422,8 @@ pub enum HashType {
     OperationListHash,
     // "\006\124\117" (* sr1(36) *)
     SmartRollupHash,
+    // "\013\044\064\027" (* expr(54) *)
+    ScriptExprHash,
 }
 
 impl HashType {
@@ -436,7 +453,13 @@ impl HashType {
             HashType::PublicKeyBls => &PUBLIC_KEY_BLS,
             HashType::SeedEd25519 => &SEED_ED25519,
             HashType::SecretKeyEd25519 => &SECRET_KEY_ED25519,
+            HashType::SecretKeySecp256k1 => &SECRET_KEY_SECP256K1,
+            HashType::SecretKeyP256 => &SECRET_KEY_P256,
             HashType::SecretKeyBls => &SECRET_KEY_BLS,
+            HashType::EncryptedSecretKeyEd25519 => &ENCRYPTED_SECRET_KEY_ED25519,
+            HashType::EncryptedSecretKeySecp256k1 => &ENCRYPTED_SECRET_KEY_SECP256K1,
+            HashType::EncryptedSecretKeyP256 => &ENCRYPTED_SECRET_KEY_P256,
+            HashType::EncryptedSecretKeyBls => &ENCRYPTED_SECRET_KEY_BLS,
             HashType::UnknownSignature => &GENERIC_SIGNATURE_HASH,
             HashType::Ed25519Signature => &ED22519_SIGNATURE_HASH,
             HashType::Secp256k1Signature => &SECP256K1_SIGNATURE_HASH,
@@ -445,6 +468,7 @@ impl HashType {
             HashType::NonceHash => &NONCE_HASH,
             HashType::OperationListHash => &OPERATION_LIST_HASH,
             HashType::SmartRollupHash => &SMART_ROLLUP_HASH,
+            HashType::ScriptExprHash => &SCRIPT_EXPR_HASH,
         }
     }
 
@@ -472,8 +496,17 @@ impl HashType {
             | HashType::ContractTz4Hash
             | HashType::SmartRollupHash => 20,
             HashType::PublicKeySecp256k1 | HashType::PublicKeyP256 => 33,
-            HashType::SecretKeyEd25519 | HashType::SeedEd25519 | HashType::SecretKeyBls => 32,
+            HashType::SecretKeyEd25519
+            | HashType::SeedEd25519
+            | HashType::SecretKeySecp256k1
+            | HashType::SecretKeyP256
+            | HashType::SecretKeyBls
+            | HashType::ScriptExprHash => 32,
             HashType::PublicKeyBls => 48,
+            HashType::EncryptedSecretKeyEd25519
+            | HashType::EncryptedSecretKeySecp256k1
+            | HashType::EncryptedSecretKeyP256
+            | HashType::EncryptedSecretKeyBls => 56,
             HashType::Ed25519Signature
             | HashType::Secp256k1Signature
             | HashType::P256Signature
@@ -789,7 +822,7 @@ impl BlockPayloadHash {
             round.as_ref(),
             operation_list_hash.0.as_ref(),
         ];
-        blake2b::digest_all(&input, 32).map(BlockPayloadHash)
+        blake2b::digest_all(input, 32).map(BlockPayloadHash)
     }
 }
 
@@ -991,7 +1024,7 @@ mod tests {
     fn test_decode_block_header_hash() -> Result<(), anyhow::Error> {
         let decoded = HashType::BlockHash
             .b58check_to_hash("BKyQ9EofHrgaZKENioHyP4FZNsTmiSEcVmcghgzCC9cGhE7oCET")?;
-        let decoded = hex::encode(&decoded);
+        let decoded = hex::encode(decoded);
         let expected = "2253698f0c94788689fb95ca35eb1535ec3a8b7c613a97e6683f8007d7959e4b";
         assert_eq!(expected, decoded);
 
@@ -1002,7 +1035,7 @@ mod tests {
     fn test_decode_operations_hash() -> Result<(), anyhow::Error> {
         let decoded = HashType::OperationListListHash
             .b58check_to_hash("LLoaGLRPRx3Zf8kB4ACtgku8F4feeBiskeb41J1ciwfcXB3KzHKXc")?;
-        let decoded = hex::encode(&decoded);
+        let decoded = hex::encode(decoded);
         let expected = "7c09f7c4d76ace86e1a7e1c7dc0a0c7edcaa8b284949320081131976a87760c3";
         assert_eq!(expected, decoded);
 
@@ -1028,7 +1061,7 @@ mod tests {
     fn test_decode_block_metadata_hash() -> Result<(), anyhow::Error> {
         let decoded = HashType::BlockMetadataHash
             .b58check_to_hash("bm2gU1qwmoPNsXzFKydPDHWX37es6C5Z4nHyuesW8YxbkZ1339cN")?;
-        let decoded = hex::encode(&decoded);
+        let decoded = hex::encode(decoded);
         let expected = "0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8";
         assert_eq!(expected, decoded);
 
@@ -1043,7 +1076,7 @@ mod tests {
     fn test_decode_operation_metadata_list_list_hash() -> Result<(), anyhow::Error> {
         let decoded = HashType::OperationMetadataListListHash
             .b58check_to_hash("LLr283rR7AWhepNeHcP9msa2VeAurWtodBLrnSjwaxpNyiyfhYcKX")?;
-        let decoded = hex::encode(&decoded);
+        let decoded = hex::encode(decoded);
         let expected = "761223dee6643bb9f28acf45f2a44ae1a3e2fd68bfc1a00e3f539cc2dc637632";
         assert_eq!(expected, decoded);
 
@@ -1058,7 +1091,7 @@ mod tests {
     fn test_decode_operation_metadata_hash() -> Result<(), anyhow::Error> {
         let decoded = HashType::OperationMetadataHash
             .b58check_to_hash("r3E9xb2QxUeG56eujC66B56CV8mpwjwfdVmEpYu3FRtuEx9tyfG")?;
-        let decoded = hex::encode(&decoded);
+        let decoded = hex::encode(decoded);
         let expected = "2d905a5c4fefad1f1ab8a5436f26b15290f2fe2bea111c85ee4626156dc6b4da";
         assert_eq!(expected, decoded);
 
@@ -1258,6 +1291,24 @@ mod tests {
             ]
         );
 
+        test!(
+            sk_secp256k1,
+            SecretKeySecp256k1,
+            [
+                "spsk1sheno8Jt8FoBEoamFoNBxUEpjEggNNpepTFc8cEoJBA9QjDJq",
+                "spsk3A48fpDpqfFL5s6htBCJhA5c6a1PB63T6vr5qUpxG4AtTmtyxN"
+            ]
+        );
+
+        test!(
+            sk_p256,
+            SecretKeyP256,
+            [
+                "p2sk2o1iwxijPVfzBQyFMPYdomJs1RMgKGQ88Y9WCn1YUosYistbQR",
+                "p2sk3BrqNsbVuQnkuoTLLirsMcKRZ2jJtLG4hu43ZsmCfibPHk3oM4"
+            ]
+        );
+
         test!(pk_hash, CryptoboxPublicKeyHash, []);
 
         test!(pk_ed25519, PublicKeyEd25519, []);
@@ -1276,6 +1327,50 @@ mod tests {
             sk_bls,
             SecretKeyBls,
             ["BLsk1WTwJFkLU2P57itDq1cgEUqJK7Fwygvtj49vT4HeLfNBXRgpDA"]
+        );
+
+        test!(
+            esk_ed25519,
+            EncryptedSecretKeyEd25519,
+            [
+                // Password: 0000
+                "edesk1Q6YiE2DvwxchHV7MsGkXAF2239EUuYq65pD334J1AowkgoffkvPWgYZDFgMkYCUXsHS1u5CZLjWkdgYPTq",
+                // Password: 0000
+                "edesk1G8EdN8uMMx5KAhAhsAahUfvBAbCMRCGLUniucEiepRKqQY3zhTyDvPQRDkMczMzMgdWbPsys7CG4d43Z3i"
+            ]
+        );
+
+        test!(
+            esk_secp256k1,
+            EncryptedSecretKeySecp256k1,
+            [
+                // Password: 0000
+                "spesk2CVd5M4CN2LtSotq3GiQ2wPMWvoNbKbo89hA7XSN22iTDRo5qFVMm4STN2acMESRLNsTZbdQcKZYZB8xQx3",
+                // Password: 0000
+                "spesk1XwiKWzcr8vSHDY2SpDa1DZrZv7KP88w2ijsD62HfM1rmXbC43EoLW6sbgh6UvzrscMy6ZFkckoHM4fSnE1"
+            ]
+        );
+
+        test!(
+            esk_p256,
+            EncryptedSecretKeyP256,
+            [
+                // Password: 0000
+                "p2esk2VSXTM45zrnVpoSgupYEBxzV5HNcGxcah9ApSed6f7B5oEAUwXPhnRxQAMuPW9BebpeMUWUuFzJ22tEVrwP",
+                // Password: 0000
+                "p2esk2M4mq4SDntL6Pqc4HhRSmmBFoVHkjpq75MCgLeXZVmBgiTyTwc55t1AZWSoRS88ziRpKaxY3RtSbirJpcSR"
+            ]
+        );
+
+        test!(
+            esk_bls,
+            EncryptedSecretKeyBls,
+            [
+                // Password: 0000
+                "BLesk1NgZpuK3W6scZZhj2GoLsvH7vFRmAKASF2WRLpf1bzpkFNRgyT4oBceQAVnTSDtPrrXLoTtqf5nBt9YFw1y",
+                // Password: 0000
+                "BLesk1RCU9zwHZPfBwpdjHpLQ23Yk7oRmqn9F4gNESaAvNDcrXMsBv3DiZJjK9oEQUh8SKfG5Gzwjp4LE1z4eH2v"
+            ]
         );
 
         test!(
@@ -1317,6 +1412,15 @@ mod tests {
             [
                 "sr1VN4vvy9uW7zftBvCRmh3RXm3KWS9atR9Q",
                 "sr1VHPsgVnB3gzRyRULuVV2zmbKyRBMq9gbV"
+            ]
+        );
+
+        test!(
+            script_expr_hash,
+            ScriptExprHash,
+            [
+                "exprtWsu7N8st7XBhS685Qa2B4xP6TuTN9ve9UPCU29fV94ySDo5Va",
+                "expru1WEuDy9T9KtXzxBpyBNZ14Q4QankpRGrsAdBYRgHKu1qbqw3H"
             ]
         );
     }

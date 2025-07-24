@@ -31,7 +31,7 @@ pub struct FieldEncoding<'a> {
 }
 
 impl<'a> FieldEncoding<'a> {
-    pub fn encoding(&'a self) -> Option<&Encoding<'a>> {
+    pub fn encoding(&'a self) -> Option<&'a Encoding<'a>> {
         match &self.kind {
             FieldKind::Encoded(encoded_field) => Some(&encoded_field.encoding),
             _ => None,
@@ -62,12 +62,12 @@ pub struct Tag<'a> {
 
 #[derive(Debug)]
 pub enum Encoding<'a> {
-    Unit,
+    Unit(Span),
     Primitive(PrimitiveEncoding, Span),
     Bytes(Span),
     Path(&'a syn::Path),
     Zarith(Span),
-    MuTez(Span),
+    Narith(Span),
 
     String(Option<syn::Expr>, Span),
 

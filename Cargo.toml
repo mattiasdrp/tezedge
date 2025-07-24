@@ -3,9 +3,10 @@ cargo-features = ["named-profiles"]
 [workspace]
 resolver = "2"
 members = [
-    "crypto",
-    "tezos-encoding",
-    "tezos-encoding-derive",
+  "crypto",
+  "tezos-encoding",
+  "tezos-encoding-derive",
+  "protocol",
 ]
 
 [workspace.dependencies.tezos_data_encoding]
@@ -21,6 +22,11 @@ default-features = false
 [workspace.dependencies.tezos_crypto_rs]
 version = "0.6.0"
 path = "./crypto"
+default-features = false
+
+[workspace.dependencies.tezos-protocol]
+version = "0.1.0"
+path = "./protocol"
 default-features = false
 
 [workspace.dependencies.nom]
