@@ -3,6 +3,7 @@ cargo-features = ["named-profiles"]
 [workspace]
 resolver = "2"
 members = [
+  "context",
   "crypto",
   "tezos-encoding",
   "tezos-encoding-derive",
