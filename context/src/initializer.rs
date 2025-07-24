@@ -5,7 +5,6 @@ use std::sync::Arc;
 use std::thread::JoinHandle;
 use std::time::Duration;
 
-use ipc::IpcError;
 use parking_lot::RwLock;
 pub use tezos_context_api::ContextKvStoreConfiguration;
 use tezos_context_api::TezosContextTezEdgeStorageConfiguration;
@@ -21,13 +20,6 @@ use crate::{ContextKeyValueStore, PatchContextFunction, TezedgeContext, TezedgeI
 /// IPC communication errors
 #[derive(Debug, Error)]
 pub enum IndexInitializationError {
-    #[error("Failure when initializing IPC context: {reason}")]
-    IpcError {
-        #[from]
-        reason: IpcError,
-    },
-    #[error("Attempted to initialize an IPC context without a socket path")]
-    IpcSocketPathMissing,
     #[error("Unexpected IO error occurred, {reason}")]
     IoError {
         #[from]
@@ -122,7 +114,6 @@ pub fn initialize_tezedge_index(
     patch_context: Option<PatchContextFunction>,
 ) -> Result<TezedgeIndex, IndexInitializationError> {
     let repository: Arc<RwLock<ContextKeyValueStore>> = match configuration.backend {
-        ContextKvStoreConfiguration::ReadOnlyIpc => todo!(),
         ContextKvStoreConfiguration::InMem(ref options) => {
             Arc::new(RwLock::new(InMemory::try_new(InMemoryConfiguration {
                 db_path: Some(options.base_path.clone()),

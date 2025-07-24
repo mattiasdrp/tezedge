@@ -1157,7 +1157,6 @@ mod tests {
                 base_path: "".to_string(),
                 startup_check: false,
             }),
-            ipc_socket_path: None,
         })
         .unwrap();
 

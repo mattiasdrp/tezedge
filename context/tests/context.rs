@@ -52,11 +52,8 @@ pub fn context_set_get_commit(
     block_storage.put_block_header(&block)?;
 
     // context
-    let mut context = initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration {
-        backend,
-        ipc_socket_path: None,
-    })
-    .unwrap();
+    let mut context =
+        initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration { backend }).unwrap();
 
     // add to context
     context = context.add(
@@ -126,11 +123,8 @@ pub fn context_hash_from_working_tree(
     block_storage.put_block_header(&block)?;
 
     // context
-    let mut context = initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration {
-        backend,
-        ipc_socket_path: None,
-    })
-    .unwrap();
+    let mut context =
+        initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration { backend }).unwrap();
 
     // Enough to create inodes
     for index in 0..1000 {
@@ -201,11 +195,8 @@ pub fn context_delete_and_remove(
     block_storage.put_block_header(&block)?;
 
     // context
-    let mut context = initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration {
-        backend,
-        ipc_socket_path: None,
-    })
-    .unwrap();
+    let mut context =
+        initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration { backend }).unwrap();
 
     // add to context
     context = context.add(
@@ -384,11 +375,8 @@ fn context_copy(backend: ContextKvStoreConfiguration, tmp_dir: &str) -> Result<(
     block_storage.put_block_header(&block)?;
 
     // context
-    let mut context = initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration {
-        backend,
-        ipc_socket_path: None,
-    })
-    .unwrap();
+    let mut context =
+        initialize_tezedge_context(&TezosContextTezEdgeStorageConfiguration { backend }).unwrap();
 
     // add to context
     context = context.add(
