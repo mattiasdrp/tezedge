@@ -6,6 +6,7 @@ members = [
   "context",
   "context-api",
   "crypto",
+  "edgekv",
   "identity",
   "spsc",
   "storage",
