@@ -7,13 +7,14 @@ use std::sync::Arc;
 use rocksdb::{Cache, ColumnFamilyDescriptor, MergeOperands};
 
 use tezos_crypto_rs::hash::BlockHash;
-use tezos_messages::p2p::encoding::prelude::*;
 
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};
 use crate::persistent::database::{default_table_options, RocksDbKeyValueSchema};
 use crate::persistent::{Decoder, Encoder, KeyValueSchema, SchemaError};
 use crate::PersistentStorage;
 use crate::{BlockHeaderWithHash, StorageError};
+
+use tezos_base::messages::OperationsForBlocksMessage;
 
 /// Convenience type for operation meta storage database
 pub type OperationsMetaStorageKV =

@@ -10,9 +10,8 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
+use tezos_base::messages::{MessageHash, OperationMessage};
 use tezos_crypto_rs::hash::{HashType, OperationHash};
-use tezos_messages::p2p::binary_message::MessageHash;
-use tezos_messages::p2p::encoding::operation::OperationMessage;
 
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};
 use crate::persistent::database::RocksDbKeyValueSchema;

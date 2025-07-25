@@ -18,11 +18,11 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use thiserror::Error;
 
+use tezos_base::block_header::{BlockHeader, BlockHeaderBuilder};
 use tezos_crypto_rs::hash::{
     chain_id_from_block_hash, BlockHash, ChainId, ContextHash, OperationListListHash, ProtocolHash,
 };
 use tezos_crypto_rs::{base58::FromBase58CheckError, blake2b::Blake2bError};
-use tezos_messages::p2p::encoding::prelude::{BlockHeader, BlockHeaderBuilder};
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 
@@ -190,6 +190,7 @@ impl TezosEnvironment {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct ParseTezosEnvironmentError(String);
 
@@ -701,7 +702,7 @@ impl TezosEnvironmentConfiguration {
 
     /// Resolves main chain_id, which is computed from genesis header
     pub fn main_chain_id(&self) -> Result<ChainId, TezosEnvironmentError> {
-        chain_id_from_block_hash(&self.genesis_header_hash()?).map_err(|e| e.into())
+        Ok(chain_id_from_block_hash(&self.genesis_header_hash()?))
     }
 
     /// Resolves genesis protocol
@@ -997,7 +998,7 @@ impl ZcashParams {
 
 #[cfg(test)]
 mod tests {
-    use tezos_messages::{p2p::encoding::limits::CHAIN_NAME_MAX_LENGTH, ts_to_rfc3339};
+    use tezos_base::{limits::CHAIN_NAME_MAX_LENGTH, ts_to_rfc3339};
 
     use super::*;
 

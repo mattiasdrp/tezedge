@@ -119,6 +119,7 @@ impl HashObjectStore {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn clear(&mut self) {
         *self = Self {
             hashes: SharedIndexMap::empty(),
@@ -163,6 +164,7 @@ impl HashObjectStore {
             .flatten()
     }
 
+    #[allow(dead_code)]
     pub(crate) fn with_value<F, R>(&self, hash_id: HashId, fun: F) -> Result<R, DBError>
     where
         F: FnOnce(Option<&Option<InlinedBoxedSlice>>) -> R,

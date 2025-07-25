@@ -572,7 +572,7 @@ impl Drop for DataStore {
     fn drop(&mut self) {
         // TODO - TE-721: handle this error
         let _ = self.sync_all(false);
-        self.lock_file.unlock().unwrap();
+        fs2::FileExt::unlock(&self.lock_file).unwrap();
     }
 }
 

@@ -74,7 +74,7 @@ impl TezedgeDatabaseBackendStore for RocksDBBackend {
             .map_err(Error::from)?;
 
         let total_write_duration = timer.elapsed();
-        let mut stat = stats.entry(column).or_insert_with(Default::default);
+        let stat = stats.entry(column).or_insert_with(Default::default);
         stat.total_write_duration += total_write_duration;
         stat.total_writes += 1;
         Ok(())
@@ -108,7 +108,7 @@ impl TezedgeDatabaseBackendStore for RocksDBBackend {
             .map_err(Error::from);
 
         let total_update_duration = timer.elapsed();
-        let mut stat = stats.entry(column).or_insert_with(Default::default);
+        let stat = stats.entry(column).or_insert_with(Default::default);
         stat.total_update_duration += total_update_duration;
         stat.total_updates += 1;
 
@@ -129,7 +129,7 @@ impl TezedgeDatabaseBackendStore for RocksDBBackend {
         let value = self.db.get_cf(cf, key).map_err(Error::from)?;
 
         let total_read_duration = timer.elapsed();
-        let mut stat = stats.entry(column).or_insert_with(Default::default);
+        let stat = stats.entry(column).or_insert_with(Default::default);
         stat.total_read_duration += total_read_duration;
         stat.total_reads += 1;
 
@@ -195,7 +195,7 @@ impl TezedgeDatabaseBackendStore for RocksDBBackend {
                 .iterator_cf(cf, rocksdb::IteratorMode::From(&key, direction.into())),
         };
 
-        Ok(Box::new(iter.map(Ok)))
+        Ok(Box::new(iter.map(|item| item.map_err(Error::from))))
     }
 
     fn find_by_prefix<'a>(
@@ -209,7 +209,11 @@ impl TezedgeDatabaseBackendStore for RocksDBBackend {
             .cf_handle(column)
             .ok_or(Error::MissingColumnFamily { name: column })?;
 
-        Ok(Box::new(self.db.prefix_iterator_cf(cf, key).map(Ok)))
+        Ok(Box::new(
+            self.db
+                .prefix_iterator_cf(cf, key)
+                .map(|item| item.map_err(Error::from)),
+        ))
     }
 
     fn column_stats(&self) -> HashMap<&'static str, DBStats> {

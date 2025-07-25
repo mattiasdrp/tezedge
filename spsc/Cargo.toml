@@ -9,3 +9,6 @@ rust-version = "1.58"
 loom = "0.5"
 
 [dependencies]
+
+[features]
+loom = []

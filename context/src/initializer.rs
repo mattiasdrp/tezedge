@@ -114,6 +114,7 @@ pub fn initialize_tezedge_index(
     patch_context: Option<PatchContextFunction>,
 ) -> Result<TezedgeIndex, IndexInitializationError> {
     let repository: Arc<RwLock<ContextKeyValueStore>> = match configuration.backend {
+        ContextKvStoreConfiguration::ReadOnlyIpc => todo!(),
         ContextKvStoreConfiguration::InMem(ref options) => {
             Arc::new(RwLock::new(InMemory::try_new(InMemoryConfiguration {
                 db_path: Some(options.base_path.clone()),

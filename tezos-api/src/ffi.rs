@@ -7,19 +7,19 @@ use std::{convert::TryFrom, fmt};
 
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
-use tezos_messages::p2p::encoding::block_header::Level;
-use tezos_messages::p2p::encoding::fitness::Fitness;
-use tezos_messages::Timestamp;
+use tezos_base::{
+    block_header::{BlockHeader, Level},
+    fitness::Fitness,
+    messages::{MessageHash, MessageHashError, Operation, OperationsForBlocksMessage, Path},
+    timestamp::Timestamp,
+};
 use thiserror::Error;
 
 use tezos_crypto_rs::hash::{
     BlockHash, BlockMetadataHash, ChainId, ContextHash, FromBytesError, OperationHash,
     OperationListListHash, OperationMetadataHash, OperationMetadataListListHash, ProtocolHash,
 };
-use tezos_messages::p2p::binary_message::{MessageHash, MessageHashError};
-use tezos_messages::p2p::encoding::prelude::{
-    BlockHeader, Operation, OperationsForBlocksMessage, Path,
-};
+
 use url::Url;
 
 pub mod ffi_error_ids {
@@ -64,7 +64,6 @@ pub struct TezosRuntimeConfiguration {
     pub log_level: Option<TezosRuntimeLogLevel>,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Clone, Serialize, Deserialize, Debug, Builder)]
 pub struct ApplyBlockRequest {
     pub chain_id: ChainId,
@@ -86,7 +85,6 @@ impl ApplyBlockRequest {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct CycleRollsOwnerSnapshot {
     pub cycle: i32,
@@ -96,7 +94,6 @@ pub struct CycleRollsOwnerSnapshot {
 }
 
 /// Application block result
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct ApplyBlockResponse {
     pub validation_result_message: String,
@@ -126,7 +123,6 @@ pub struct ApplyBlockResponse {
 }
 
 /// Block application execution timestamps
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Clone, Default, Serialize, Deserialize, Debug, PartialEq)]
 pub struct ApplyBlockExecutionTimestamps {
     pub apply_start_t: f64,
@@ -146,7 +142,6 @@ pub struct ApplyBlockExecutionTimestamps {
     pub apply_end_t: f64,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PrevalidatorWrapper {
     pub chain_id: ChainId,
@@ -173,13 +168,11 @@ pub struct BeginApplicationRequest {
     pub block_header: BlockHeader,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BeginApplicationResponse {
     pub result: String,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum GetLastContextHashesError {
     #[error("Failed to get the latest context hashes: {message}!")]
@@ -211,16 +204,10 @@ pub struct ValidateOperationRequest {
     pub include_operation_data_json: bool,
 }
 
-#[cfg(feature = "fuzzing")]
-use tezos_encoding::fuzzing::bigint::BigIntMutator;
-
 // Used to represent an operation weight after pre-filter prioritization
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Rational {
-    #[cfg_attr(feature = "fuzzing", field_mutator(BigIntMutator))]
     pub num: num_bigint::BigInt,
-    #[cfg_attr(feature = "fuzzing", field_mutator(BigIntMutator))]
     pub den: num_bigint::BigInt,
 }
 
@@ -269,7 +256,6 @@ impl Rational {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum PreFilterOperationResult {
     Unparseable,
@@ -279,7 +265,6 @@ pub enum PreFilterOperationResult {
     Low(Vec<Rational>),
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
 pub struct PreFilterOperationResponse {
@@ -293,7 +278,6 @@ pub struct PreFilterOperationResponse {
     pub pre_filter_operation_ended_at: f64,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ValidateOperationResponse {
     pub prevalidator: PrevalidatorWrapper,
@@ -313,7 +297,6 @@ pub trait HasOperationHash {
     fn operation_hash(&self) -> &OperationHash;
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Validated {
     pub hash: OperationHash,
@@ -337,7 +320,6 @@ impl fmt::Debug for Validated {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Errored {
     pub hash: OperationHash,
@@ -363,7 +345,6 @@ impl fmt::Debug for Errored {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum OperationClassification {
     Applied,
@@ -374,7 +355,6 @@ pub enum OperationClassification {
     Outdated(ErrorListJson),
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ClassifiedOperation {
     pub classification: OperationClassification,
@@ -384,7 +364,6 @@ pub struct ClassifiedOperation {
 
 /// Validation operation result. It is either an unparseable operation,
 /// or a classified operation.
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ValidateOperationResult {
     Unparseable,
@@ -392,7 +371,6 @@ pub enum ValidateOperationResult {
 }
 
 /// Init protocol context result
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct InitProtocolContextResult {
     pub supported_protocol_hashes: Vec<ProtocolHash>,
@@ -420,7 +398,6 @@ impl fmt::Debug for InitProtocolContextResult {
 }
 
 /// Commit genesis result
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CommitGenesisResult {
     pub block_header_proto_json: String,
@@ -429,7 +406,6 @@ pub struct CommitGenesisResult {
 }
 
 /// Forking test chain data
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct ForkingTestchainData {
     pub forking_block_hash: BlockHash,
@@ -468,7 +444,6 @@ impl From<TezosErrorTrace> for CallError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum TezosStorageInitError {
     #[error("OCaml storage init failed, message: {message}!")]
@@ -491,7 +466,6 @@ impl From<FromBytesError> for TezosStorageInitError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum GetDataError {
     #[error("OCaml failed to get data, message: {message}!")]
@@ -506,7 +480,6 @@ impl From<TezosErrorTrace> for GetDataError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum DumpContextError {
     #[error("OCaml failed to dump the context, message: {message}!")]
@@ -521,7 +494,6 @@ impl From<TezosErrorTrace> for DumpContextError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum RestoreContextError {
     #[error("OCaml failed to restore the context from a dump, message: {message}!")]
@@ -536,7 +508,6 @@ impl From<TezosErrorTrace> for RestoreContextError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum IntegrityCheckContextError {
     #[error("OCaml failed to restore the context from a dump, message: {message}!")]
@@ -551,7 +522,6 @@ impl From<TezosErrorTrace> for IntegrityCheckContextError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub enum ApplyBlockError {
     #[error("Incomplete operations, expected: {expected}, has actual: {actual}!")]
@@ -643,7 +613,6 @@ impl From<CallError> for ApplyBlockError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum BeginApplicationError {
     #[error("Failed to begin application - message: {message}!")]
@@ -680,7 +649,6 @@ impl From<CallError> for BeginApplicationError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum BeginConstructionError {
     #[error("Failed to begin construction - message: {message}!")]
@@ -717,7 +685,6 @@ impl From<CallError> for BeginConstructionError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum PreFilterOperationError {
     #[error("Failed to pre-filter operation - message: {message}!")]
@@ -744,7 +711,6 @@ impl From<CallError> for PreFilterOperationError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum ValidateOperationError {
     #[error("Failed to validate operation - message: {message}!")]
@@ -786,7 +752,6 @@ impl From<TezosErrorTrace> for ContextDataError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum ProtocolDataError {
     #[error("Resolve/decode context data failed to decode: {message}!")]
@@ -809,7 +774,6 @@ impl From<FromBytesError> for ProtocolDataError {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum FfiJsonEncoderError {
     #[error("FFI JSON encoding error: {message}!")]
@@ -836,7 +800,6 @@ pub struct PreapplyBlockRequest {
     pub predecessor_max_operations_ttl: i32,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PreapplyBlockResponse {
     pub level: Level,
@@ -924,13 +887,11 @@ pub struct HelpersPreapplyBlockRequest {
     pub predecessor_max_operations_ttl: i32,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct HelpersPreapplyResponse {
     pub body: Json,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ProtocolRpcResponse {
     RPCConflict(Option<String>),
@@ -989,7 +950,6 @@ impl ProtocolRpcResponse {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum RpcMethod {
     DELETE,
@@ -1015,14 +975,12 @@ impl TryFrom<&str> for RpcMethod {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RpcArgDesc {
     pub name: String,
     pub descr: Option<String>,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum ProtocolRpcError {
     #[error("RPC: cannot parse body: {0}")]
@@ -1048,7 +1006,6 @@ pub struct ProtocolRpcRequest {
     pub request: RpcRequest,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum HelpersPreapplyError {
     #[error("Failed to call protocol rpc - message: {message}!")]
@@ -1101,13 +1058,11 @@ impl TryFrom<&Vec<Vec<Operation>>> for ComputePathRequest {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ComputePathResponse {
     pub operations_hashes_path: Vec<Path>,
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum ComputePathError {
     #[error("Path computation failed, message: {message}!")]
@@ -1133,7 +1088,6 @@ impl From<CallError> for ComputePathError {
 }
 
 /// Error types generated by a tezos protocol.
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum ProtocolError {
     /// Protocol rejected to apply a block.

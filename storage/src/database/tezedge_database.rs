@@ -113,6 +113,7 @@ impl TezedgeDatabaseBackendConfiguration {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct TezedgeDatabaseBackendConfigurationError(String);
 

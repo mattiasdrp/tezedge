@@ -27,7 +27,6 @@ pub struct RewardStorage {
 pub type Delegate = String;
 pub type RewardData = BTreeMap<Delegate, CycleRewardsInt>;
 
-// TODO: fuzzing?
 /// A struct holding the reward values as mutez strings to be able to serialize BigInts as Strings
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct CycleRewards {

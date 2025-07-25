@@ -1,7 +1,7 @@
 // Copyright (c) SimpleStaking, Viable Systems and Tezedge Contributors
 // SPDX-License-Identifier: MIT
 
-#[cfg(not(loom))]
+#[cfg(not(feature = "loom"))]
 pub(crate) use std::sync::{
     atomic::{
         AtomicUsize,
@@ -14,7 +14,7 @@ pub(crate) use std::sync::{
 // expressed with `loom::cell::UnsafeCell`
 pub(crate) use std::cell::UnsafeCell;
 
-#[cfg(loom)]
+#[cfg(feature = "loom")]
 pub(crate) use loom::sync::{
     atomic::{
         AtomicUsize,

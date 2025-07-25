@@ -71,7 +71,7 @@ impl Identity {
     }
 
     pub fn check_peer_id(&self) -> Result<(), IdentityError> {
-        if self.peer_id == self.public_key.public_key_hash()? {
+        if self.peer_id == self.public_key.public_key_hash() {
             Ok(())
         } else {
             Err(IdentityError::InvalidPeerIdError)

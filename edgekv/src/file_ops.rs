@@ -228,8 +228,8 @@ impl ActiveFilePair {
         hfw.write_all(&hint_entry.encode())?;
         hfw.flush()?;
 
-        self.data_file.unlock()?;
-        self.hint_file.unlock()?;
+        fs2::FileExt::unlock(&self.data_file)?;
+        fs2::FileExt::unlock(&self.hint_file)?;
         Ok(KeyDirEntry::new(
             self.file_pair.file_id.to_string(),
             hint_entry.key_size(),
@@ -247,7 +247,7 @@ impl ActiveFilePair {
         hfw.write_all(&hint_entry.encode())?;
         // TODO - TE-721: handle this error
         hfw.flush()?;
-        self.hint_file.unlock()?;
+        fs2::FileExt::unlock(&self.hint_file)?;
         Ok(())
     }
 }

@@ -8,12 +8,13 @@ use rocksdb::{Cache, ColumnFamilyDescriptor, SliceTransform};
 use serde::{Deserialize, Serialize};
 
 use tezos_crypto_rs::hash::{BlockHash, HashType};
-use tezos_messages::p2p::encoding::prelude::*;
 
 use crate::database::tezedge_database::{KVStoreKeyValueSchema, TezedgeDatabaseWithIterator};
 use crate::persistent::database::{default_table_options, RocksDbKeyValueSchema};
 use crate::persistent::{BincodeEncoded, Decoder, Encoder, KeyValueSchema, SchemaError};
 use crate::{PersistentStorage, StorageError};
+
+use tezos_base::messages::{OperationsForBlock, OperationsForBlocksMessage};
 
 pub type OperationsStorageKV = dyn TezedgeDatabaseWithIterator<OperationsStorage> + Sync + Send;
 
@@ -109,7 +110,6 @@ impl KVStoreKeyValueSchema for OperationsStorage {
     }
 }
 
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct OperationKey {
     pub block_hash: BlockHash,

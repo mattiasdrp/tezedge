@@ -1,6 +1,5 @@
 // Copyright (c) SimpleStaking, Viable Systems and Tezedge Contributors
 // SPDX-License-Identifier: MIT
-#![cfg_attr(feature = "fuzzing", feature(no_coverage))]
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -8,7 +7,7 @@ use std::collections::BTreeMap;
 use std::{fmt, path::PathBuf, str::FromStr};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use tezos_messages::base::rpc_support::{RpcJsonMap, UniversalValue};
+use tezos_base::rpc_support::{RpcJsonMap, UniversalValue};
 
 pub const INMEM: &str = "inmem";
 pub const ONDISK: &str = "ondisk";
@@ -36,6 +35,7 @@ impl SupportedContextKeyValueStore {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct ParseKeyValueStoreBackendError(String);
 
@@ -257,13 +257,9 @@ pub type ContextValue = Vec<u8>;
 pub type StringDirectoryMap = BTreeMap<String, StringTreeObject>;
 
 /// Tree in String form needed for JSON RPCs
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum StringTreeObject {
-    #[cfg(feature = "fuzzing")]
-    Directory,
-    #[cfg(not(feature = "fuzzing"))]
     Directory(StringDirectoryMap),
     Blob(String),
     Null,

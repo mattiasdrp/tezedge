@@ -223,6 +223,7 @@ impl<'a> VacantObjectHash<'a> {
         Ok(hash_id)
     }
 
+    #[allow(dead_code)]
     pub(crate) fn set_readonly_runner(mut self) -> Self {
         self.is_working_tree = true;
         self

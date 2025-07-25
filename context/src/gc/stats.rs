@@ -39,6 +39,7 @@ impl std::fmt::Debug for Command {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct CollectorStatistics {
     pub unused_found: usize,
@@ -53,6 +54,7 @@ pub struct CollectorStatistics {
     pub delay_since_last_gc: Option<std::time::Duration>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct CommitStatistics {
     pub new_hash_id: usize,

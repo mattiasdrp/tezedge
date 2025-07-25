@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 #![forbid(unsafe_code)]
-#![cfg_attr(feature = "fuzzing", feature(no_coverage))]
 
 use std::path::Path;
 use std::sync::Arc;
@@ -15,8 +14,16 @@ pub use rocksdb;
 use rocksdb::Cache;
 use serde::{Deserialize, Serialize};
 use slog::{info, Logger};
+use tezos_base::{
+    block_header::{BlockHeader, Head},
+    fitness::Fitness,
+    messages::{BinaryRead, BinaryWrite, MessageHash, MessageHashError},
+};
+
+// use tezos_messages::p2p::binary_message::{BinaryRead, BinaryWrite, MessageHash, MessageHashError};
+// use tezos_messages::p2p::encoding::prelude::BlockHeader;
+// use tezos_messages::Head;
 use tezos_context_api::{PatchContext, TezosContextStorageConfiguration};
-use tezos_messages::p2p::encoding::fitness::Fitness;
 use thiserror::Error;
 
 use tezos_api::environment::{
@@ -27,9 +34,6 @@ use tezos_crypto_rs::{
     base58::FromBase58CheckError,
     hash::{BlockHash, ChainId, ContextHash, FromBytesError, HashType},
 };
-use tezos_messages::p2p::binary_message::{BinaryRead, BinaryWrite, MessageHash, MessageHashError};
-use tezos_messages::p2p::encoding::prelude::BlockHeader;
-use tezos_messages::Head;
 
 pub use crate::block_meta_storage::{
     BlockAdditionalData, BlockMetaStorage, BlockMetaStorageKV, BlockMetaStorageReader,
@@ -71,7 +75,6 @@ mod shell_automaton;
 pub mod system_storage;
 
 /// Extension of block header with block hash
-#[cfg_attr(feature = "fuzzing", derive(fuzzcheck::DefaultMutator))]
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct BlockHeaderWithHash {
     pub hash: BlockHash,
@@ -917,7 +920,7 @@ pub mod tests_common {
             let cfg = DbConfiguration::default();
 
             // create common RocksDB block cache to be shared among column families
-            let db_cache = Cache::new_lru_cache(128 * 1024 * 1024)?; // 128 MB
+            let db_cache = Cache::new_lru_cache(128 * 1024 * 1024); // 128 MB
             let backend = if cfg!(feature = "maindb-backend-rocksdb") {
                 let kv = Arc::new(open_kv(
                     path.join("db"),

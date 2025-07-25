@@ -59,7 +59,7 @@ macro_rules! hash_codec {
     ($hash:ident) => {
         impl Encoder for $hash {
             fn encode(&self) -> Result<Vec<u8>, SchemaError> {
-                Ok(self.as_ref().clone())
+                Ok(self.as_ref().to_vec())
             }
         }
         impl Decoder for $hash {

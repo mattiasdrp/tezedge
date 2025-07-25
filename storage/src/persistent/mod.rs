@@ -130,6 +130,7 @@ pub fn open_main_db<C: RocksDbColumnFactory>(
     Ok(TezedgeDatabase::new(backend, log))
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct MultiInstanceableSyncError(String);
 

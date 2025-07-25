@@ -16,10 +16,10 @@ use std::{
 use container::{
     InlinedBlockHash, InlinedContextHash, InlinedOperationHash, InlinedProtocolHash, InlinedString,
 };
-use crypto::hash::ProtocolHash;
 use rusqlite::{named_params, Batch, Connection, Error as SQLError, Transaction};
 use serde::Serialize;
 use static_assertions::assert_eq_size;
+use tezos_crypto_rs::hash::ProtocolHash;
 use tezos_spsc::{
     bounded, Consumer,
     PopError::{Closed, Empty},
@@ -660,10 +660,7 @@ fn make_protocol_table() -> HashMap<InlinedProtocolHash, Protocol> {
 
     for (hash, protocol) in PROTOCOLS {
         let protocol_hash = ProtocolHash::from_base58_check(hash).unwrap();
-        table.insert(
-            InlinedProtocolHash::from(protocol_hash.0.as_slice()),
-            *protocol,
-        );
+        table.insert(InlinedProtocolHash::from(protocol_hash.as_ref()), *protocol);
     }
 
     table
@@ -1139,20 +1136,12 @@ impl Timing {
     }
 
     fn get_stats_protocol_mut(&mut self) -> Option<&mut GlobalStatistics> {
-        let protocol = match self.current_protocol {
-            Some(protocol) => protocol,
-            None => return None,
-        };
-
+        let protocol = self.current_protocol?;
         Some(self.stats_per_protocol.entry(protocol).or_default())
     }
 
     fn get_stats_protocol(&self) -> Option<(Protocol, &GlobalStatistics)> {
-        let protocol = match self.current_protocol {
-            Some(protocol) => protocol,
-            None => return None,
-        };
-
+        let protocol = self.current_protocol?;
         Some((protocol, self.stats_per_protocol.get(&protocol)?))
     }
 
@@ -1665,7 +1654,7 @@ impl Timing {
                 _ => continue,
             };
 
-            let mut query_stats = match query_name {
+            let query_stats = match query_name {
                 "commit" => commit_stats,
                 "checkout" => checkout_stats,
                 _ => {

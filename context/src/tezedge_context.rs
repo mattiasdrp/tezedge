@@ -9,7 +9,7 @@ use std::{cell::RefCell, convert::TryInto, sync::Arc};
 use parking_lot::RwLock;
 use tezos_context_api::StringDirectoryMap;
 use tezos_crypto_rs::hash::ContextHash;
-use tezos_timing::{BlockMemoryUsage, ContextMemoryUsage};
+use tezos_timing::ContextMemoryUsage;
 
 use crate::working_tree::working_tree::FoldOrder;
 use crate::{
@@ -1122,15 +1122,14 @@ impl TezedgeContext {
     ) -> Result<ContextHash, ContextError> {
         self.index.synchronize_interned_strings_to_repository()?;
 
-        let (commit_hash, serialize_stats) = {
+        let (commit_hash, _serialize_stats) = {
             let mut repository = self.index.repository.write();
             let date: u64 = date.try_into()?;
 
             repository.commit(&self.tree, self.parent_commit_ref, author, message, date)?
         };
 
-        let mem = self.get_memory_usage()?;
-
+        // let mem = self.get_memory_usage()?;
         // send_statistics(BlockMemoryUsage {
         //     context: Box::new(mem),
         //     serialize: serialize_stats,

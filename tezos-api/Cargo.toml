@@ -16,13 +16,13 @@ slog = { version = "2.7", features = ["max_level_trace", "release_max_level_trac
 strum = "0.20"
 strum_macros = "0.20"
 nom = "6.1"
-num-bigint = "0.3"
+num-bigint = { version = "0.3", features = ["serde"] }
 url = "2.2"
 # local dependencies
 tezos_crypto_rs = { path = "../crypto" }
 tezos_data_encoding = { path = "../tezos-encoding" }
-tezos_messages = { path = "../messages" }
 tezos_context_api = { path = "../context-api" }
+tezos_base = { path = "../tezos-base/" }
 fuzzcheck = { git = "https://github.com/tezedge/fuzzcheck-rs.git", optional = true }
 
 [dev-dependencies]
